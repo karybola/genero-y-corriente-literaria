@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Quiz Neptur: Géneros y Corrientes Literarias</title>
+    <style>
+        /* --- Optimización para Scroll en WebView --- */
+        html {
+            -webkit-overflow-scrolling: touch; 
+            scroll-behavior: smooth; 
+        }
+        /* --- Fin Optimización para Scroll --- */
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); 
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        #quiz-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 750px;
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        #quiz-header {
+            margin-bottom: 25px;
+            border-bottom: 2px solid #007bff; 
+            padding-bottom: 15px;
+        }
+
+        #quiz-header h1 {
+            color: #2C3E50;
+            font-size: 2.2em;
+            margin-bottom: 5px;
+        }
+         #quiz-header h1 .neptur-brand {
+            color: #007bff; 
+            font-weight: bold;
+        }
+        #quiz-header p {
+            font-size: 1.1em;
+            color: #555;
+        }
+
+
+        #timer {
+            font-size: 1.2em;
+            color: #E74C3C;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        #question-area h2 {
+            font-size: 1.5em;
+            color: #34495E;
+            margin-bottom: 20px;
+            line-height: 1.4;
+            text-align: left;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .option-btn {
+            background-color: #007bff; 
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            text-align: left;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: #0056b3; 
+            transform: translateY(-2px);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .option-btn.correct {
+            background-color: #28a745 !important; 
+            border: 2px solid #1e7e34;
+        }
+
+        .option-btn.incorrect {
+            background-color: #dc3545 !important; 
+            border: 2px solid #bd2130;
+        }
+
+        #explanation-area {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e9ecef; 
+            border-radius: 8px;
+            text-align: left;
+            font-size: 0.95em;
+            line-height: 1.6;
+            border-left: 5px solid #007bff; 
+        }
+        #explanation-area h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+        #explanation-area p {
+            margin-bottom: 5px;
+        }
+
+        #navigation-area button {
+            background-color: #17a2b8; 
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 15px;
+        }
+
+        #navigation-area button:hover {
+            background-color: #117a8b; 
+        }
+
+        #results-screen {
+            display: none;
+        }
+        #results-screen h2 {
+             color: #2C3E50;
+             font-size: 2em;
+        }
+        #results-screen p {
+            font-size: 1.2em;
+            margin: 15px 0;
+        }
+        #detailed-results-container {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .result-item {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+        .result-item p { font-size: 1em; margin: 8px 0; }
+        .result-item strong { color: #333; }
+        .result-item .user-answer.correct { color: #28a745; font-weight: bold; }
+        .result-item .user-answer.incorrect { color: #dc3545; font-weight: bold; }
+        .result-item .explanation-preview {
+            font-style: italic;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        #start-screen {
+            display: block;
+        }
+        #start-screen p {
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        #start-btn {
+            background-color: #ffc107; 
+            color: #212529; 
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.3em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-weight: bold;
+        }
+        #start-btn:hover {
+            background-color: #e0a800;
+        }
+
+        /* Responsividad */
+        @media (max-width: 600px) {
+            #quiz-container {
+                padding: 20px;
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+            #quiz-header h1 {
+                font-size: 1.8em;
+            }
+            #question-area h2 {
+                font-size: 1.2em;
+            }
+            .option-btn {
+                padding: 12px 15px;
+                font-size: 0.95em;
+            }
+            body {
+                padding: 10px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="quiz-container">
+        <div id="start-screen">
+            <div id="quiz-header">
+                <h1>Quiz <span class="neptur-brand">Neptur</span></h1>
+                <p>Géneros y Corrientes Literarias (Literatura 2)</p>
+            </div>
+            <p>Bienvenido al quiz sobre Géneros y Corrientes Literarias. Tendrás <strong>12 minutos</strong> para completarlo.</p>
+            <p>Lee cada pregunta con atención y selecciona la mejor respuesta. Al final, podrás revisar tus aciertos y aprender de cada explicación.</p>
+            <button id="start-btn">Comenzar Quiz</button>
+        </div>
+
+        <div id="question-screen" style="display:none;">
+            <div id="quiz-header">
+                 <h1>Quiz <span class="neptur-brand">Neptur</span></h1>
+                 <p id="question-counter"></p>
+            </div>
+            <div id="timer">Tiempo restante: 12:00</div>
+            <div id="question-area">
+                <h2 id="question-text"></h2>
+                <div id="options-grid">
+                    <button class="option-btn" data-index="0"></button>
+                    <button class="option-btn" data-index="1"></button>
+                    <button class="option-btn" data-index="2"></button>
+                    <button class="option-btn" data-index="3"></button>
+                </div>
+            </div>
+            <div id="explanation-area" style="display:none;">
+                <h3 id="explanation-title"></h3>
+                <p id="explanation-text"></p>
+            </div>
+            <div id="navigation-area">
+                <button id="next-btn" style="display:none;">Siguiente Pregunta</button>
+            </div>
+        </div>
+
+        <div id="results-screen" style="display:none;">
+            <h2>¡Quiz Completado!</h2>
+            <p id="final-score"></p>
+            <p id="time-taken"></p>
+            <h3>Resumen Detallado de Respuestas:</h3>
+            <div id="detailed-results-container">
+                <!-- Aquí se mostrarán los detalles de cada pregunta -->
+            </div>
+            <button id="restart-btn">Volver a Intentar</button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN DEL QUIZ ---
+        const TOTAL_TIME = 12 * 60; 
+
+        let questions = [
+            {
+                text: "¿Cuál es la principal diferencia entre clasificar la literatura por 'géneros' y por 'corrientes'?",
+                options: [
+                    "Los géneros se basan en la época y las corrientes en la temática.",
+                    "Los géneros se basan en la temática y forma de escritura; las corrientes en características como época, lenguaje e intenciones.",
+                    "Los géneros solo aplican a la poesía y las corrientes a la prosa.",
+                    "No hay diferencia, son dos formas de decir lo mismo."
+                ],
+                correctAnswerIndex: 1,
+                explanation: {
+                    correct: "¡Exacto! Los géneros literarios se diferencian por temática y forma (épica, lírica, dramática), mientras que las corrientes se agrupan por características de la obra como época, lenguaje e intenciones (Realismo, Contemporáneo).",
+                    incorrectBase: "El texto establece una distinción clara entre estos dos tipos de clasificación. ",
+                    optionsExplanation: [
+                        "Es al revés: géneros por temática/forma y corrientes por época/características.",
+                        "Esta es la diferencia fundamental explicada al inicio.",
+                        "Ambas clasificaciones aplican a diversas formas literarias.",
+                        "Son clasificaciones distintas con criterios diferentes."
+                    ]
+                }
+            },
+            {
+                text: "¿Cuál de los siguientes subgéneros pertenece a la literatura épica?",
+                options: [
+                    "La oda y la canción.",
+                    "La comedia y la tragedia.",
+                    "Las epopeyas, los cuentos y las novelas.",
+                    "La sátira y el madrigal."
+                ],
+                correctAnswerIndex: 2,
+                explanation: {
+                    correct: "¡Correcto! La literatura épica narra historias legendarias y entre sus subgéneros se encuentran las epopeyas, cuentos, novelas, mitos, leyendas, etc.",
+                    incorrectBase: "Estos subgéneros corresponden a otro género literario. ",
+                    optionsExplanation: [
+                        "La oda y la canción son del género lírico.",
+                        "La comedia y la tragedia son del género dramático.",
+                        "Esta es la respuesta correcta.",
+                        "La sátira y el madrigal son del género lírico."
+                    ]
+                }
+            },
+            {
+                text: "La literatura lírica se caracteriza principalmente por:",
+                options: [
+                    "Estar escrita en prosa y desarrollar diálogos.",
+                    "Narrar historias de grandes héroes y batallas.",
+                    "Estar escrita en verso y expresar sentimientos y emociones.",
+                    "Tener un final siempre trágico y lamentable."
+                ],
+                correctAnswerIndex: 2,
+                explanation: {
+                    correct: "¡Muy bien! El género lírico se distingue por su escritura en verso, el uso recurrente de recursos literarios y su enfoque en la expresión de sentimientos y emociones.",
+                    incorrectBase: "La literatura lírica tiene características distintivas en su forma y contenido. ",
+                    optionsExplanation: [
+                        "Eso es característico de la literatura dramática.",
+                        "Eso es propio de la literatura épica.",
+                        "Esta es la característica principal.",
+                        "Un final trágico es más de la tragedia (género dramático), no una característica universal de la lírica."
+                    ]
+                }
+            },
+            {
+                text: "El objetivo principal de la literatura dramática es:",
+                options: [
+                    "Ser leída en voz alta por un solo narrador.",
+                    "Expresar los sentimientos más íntimos del autor.",
+                    "Ser representada en una obra teatral, desarrollando una historia a través de diálogos.",
+                    "Contar hechos históricos de forma objetiva."
+                ],
+                correctAnswerIndex: 2,
+                explanation: {
+                    correct: "¡Excelente! Los textos dramáticos están diseñados para la representación teatral, contando una historia mediante diálogos entre personajes.",
+                    incorrectBase: "La literatura dramática tiene un propósito fundamental ligado a su forma. ",
+                    optionsExplanation: [
+                        "Aunque puede leerse, su fin es la representación.",
+                        "Eso es más característico de la literatura lírica.",
+                        "Esta es la respuesta correcta.",
+                        "Eso sería más del género épico histórico o un texto no literario."
+                    ]
+                }
+            },
+            {
+                text: "¿Qué caracteriza a la corriente literaria del Realismo, surgida en el siglo XIX?",
+                options: [
+                    "Una renovación completa del lenguaje y temáticas fantásticas.",
+                    "Una visión sumamente idealizada y romántica de la vida.",
+                    "Una visión objetiva y cruda, siendo muy descriptiva de las problemáticas sociales de la época.",
+                    "El uso exclusivo del verso y la métrica estricta."
+                ],
+                correctAnswerIndex: 2,
+                explanation: {
+                    correct: "¡Así es! El Realismo se opuso al Romanticismo, buscando retratar la realidad de forma objetiva, con descripciones detalladas, incluyendo los problemas sociales de la segunda mitad del siglo XIX.",
+                    incorrectBase: "El Realismo tiene rasgos distintivos que lo diferencian de otras corrientes. ",
+                    optionsExplanation: [
+                        "La renovación del lenguaje y temáticas entre realidad y ficción es más del Contemporáneo.",
+                        "El Realismo fue una ruptura contra la idealización romántica.",
+                        "Esta es la característica principal.",
+                        "El Realismo se manifestó principalmente en la prosa (novela, cuento)."
+                    ]
+                }
+            },
+            {
+                text: "La corriente literaria Contemporánea, aparecida en el siglo XX, se distingue por:",
+                options: [
+                    "Seguir estrictamente las reglas y temas del Realismo.",
+                    "Una renovación del lenguaje y las temáticas, moviéndose entre la realidad y la ficción, y adentrándose en la psicología de los personajes.",
+                    "Narrar únicamente hechos históricos con total objetividad.",
+                    "Limitarse a expresar sentimientos a través de poemas cortos."
+                ],
+                correctAnswerIndex: 1,
+                explanation: {
+                    correct: "¡Perfecto! La literatura contemporánea se caracteriza por innovar en lenguaje y temas, explorar la psicología de los personajes y mezclar realidad con ficción, con desarrollos variados en tiempo y espacio.",
+                    incorrectBase: "La corriente Contemporánea trajo consigo innovaciones específicas. ",
+                    optionsExplanation: [
+                        "Al contrario, busca renovar y explorar nuevas formas.",
+                        "Esta es la descripción correcta.",
+                        "Aunque puede abordar hechos históricos, no se limita a la objetividad ni es su única temática.",
+                        "Abarca una amplia gama de géneros y formas, no solo poemas cortos."
+                    ]
+                }
+            },
+            {
+                text: "Una diferencia principal entre el cuento y la novela, según el texto, es que:",
+                options: [
+                    "El cuento siempre es ficticio y la novela siempre es realista.",
+                    "La novela tiene un número fijo de personajes y el cuento no.",
+                    "El cuento es corto, sencillo y gira en torno a una temática; la novela es más compleja, extensa y puede tener múltiples historias.",
+                    "El cuento siempre tiene un narrador en primera persona y la novela en tercera persona."
+                ],
+                correctAnswerIndex: 2,
+                explanation: {
+                    correct: "¡Muy bien! El cuento se define por su brevedad, sencillez y enfoque en una sola trama, mientras que la novela permite mayor complejidad, desarrollo de personajes, escenarios y múltiples líneas argumentales.",
+                    incorrectBase: "El texto destaca diferencias clave en extensión y complejidad. ",
+                    optionsExplanation: [
+                        "Ambos pueden ser ficticios o basarse en la realidad.",
+                        "El cuento suele tener pocos personajes; la novela puede tener muchos, pero no hay un número fijo para ninguno.",
+                        "Esta es la diferencia fundamental explicada.",
+                        "El tipo de narrador puede variar en ambos."
+                    ]
+                }
+            },
+            {
+                text: "Los cuentos se subdividen según su extensión. Un cuento 'Ultracorto' tiene:",
+                options: [
+                    "Más de 2000 palabras.",
+                    "Entre 1000 y 2000 palabras.",
+                    "Entre 200 y 1000 palabras.",
+                    "Menos de 200 palabras."
+                ],
+                correctAnswerIndex: 3,
+                explanation: {
+                    correct: "¡Correcto! El texto especifica que los cuentos ultracortos son aquellos con una extensión menor a 200 palabras.",
+                    incorrectBase: "Cada subdivisión de cuento tiene un rango de palabras específico. ",
+                    optionsExplanation: [
+                        "Eso corresponde a los Convencionales.",
+                        "Eso corresponde a los Cortos.",
+                        "Eso corresponde a los Muy cortos.",
+                        "Esta es la definición de Ultracorto."
+                    ]
+                }
+            },
+            {
+                text: "En las novelas, ¿cuál es una razón por la que a veces se dividen en capítulos?",
+                options: [
+                    "Para cumplir con un requisito de longitud mínima.",
+                    "Para que el lector se ubique mejor en la historia y evitar que se pierda.",
+                    "Para separar las partes escritas en verso de las escritas en prosa.",
+                    "Únicamente para indicar los cambios de narrador."
+                ],
+                correctAnswerIndex: 1,
+                explanation: {
+                    correct: "¡Excelente! Dada la complejidad y extensión de las novelas, la división en capítulos ayuda al lector a seguir la trama, organizar la información y ubicarse mejor dentro del relato.",
+                    incorrectBase: "La división en capítulos en una novela cumple una función práctica para el lector. ",
+                    optionsExplanation: [
+                        "No hay un requisito de longitud mínima basado en capítulos.",
+                        "Esta es una de las razones principales.",
+                        "Las novelas suelen estar enteramente en prosa.",
+                        "Aunque un cambio de capítulo podría coincidir con un cambio de perspectiva, no es la única ni principal razón para la división."
+                    ]
+                }
+            },
+            {
+                text: "La subdivisión de las novelas, a diferencia de los cuentos, se guía más por:",
+                options: [
+                    "La cantidad exacta de palabras.",
+                    "El número de personajes principales.",
+                    "La temática que abordan (suspenso, ciencia ficción, históricas, etc.).",
+                    "La época en que fue escrita exclusivamente."
+                ],
+                correctAnswerIndex: 2,
+                explanation: {
+                    correct: "¡Así es! Mientras los cuentos se pueden subdividir por extensión, las novelas se suelen categorizar más por su temática o el tipo de historia que cuentan (ciencia ficción, misterio, histórica, etc.).",
+                    incorrectBase: "La clasificación de las novelas tiene un criterio predominante. ",
+                    optionsExplanation: [
+                        "Contabilizar palabras en novelas es impráctico para su clasificación general.",
+                        "El número de personajes no es el criterio principal de subdivisión.",
+                        "Esta es la forma más común de subdividir las novelas mencionada en el texto.",
+                        "La época define la corriente literaria, no necesariamente el subgénero temático de la novela."
+                    ]
+                }
+            }
+        ];
+
+        // --- VARIABLES GLOBALES ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timeLeft = TOTAL_TIME;
+        let timerInterval;
+        let quizStartTime;
+        let userAnswers = [];
+
+        // --- ELEMENTOS DEL DOM ---
+        const startScreen = document.getElementById('start-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        
+        const startBtn = document.getElementById('start-btn');
+        const timerDisplay = document.getElementById('timer');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const optionButtons = document.querySelectorAll('.option-btn');
+        const explanationArea = document.getElementById('explanation-area');
+        const explanationTitle = document.getElementById('explanation-title');
+        const explanationText = document.getElementById('explanation-text');
+        const nextBtn = document.getElementById('next-btn');
+        
+        const finalScoreDisplay = document.getElementById('final-score');
+        const timeTakenDisplay = document.getElementById('time-taken');
+        const detailedResultsContainer = document.getElementById('detailed-results-container');
+        const restartBtn = document.getElementById('restart-btn');
+
+        // --- FUNCIONES ---
+        function startQuiz() {
+            if (questions.length === 0) {
+                alert("Error: No hay preguntas cargadas. Por favor, revisa el array 'questions' en el script.");
+                return;
+            }
+
+            startScreen.style.display = 'none';
+            questionScreen.style.display = 'block';
+            resultsScreen.style.display = 'none';
+
+            currentQuestionIndex = 0;
+            score = 0;
+            timeLeft = TOTAL_TIME;
+            userAnswers = [];
+            questions.forEach(q => {
+                q.userAnswerIndex = null;
+                q.isCorrect = null;
+            });
+
+
+            quizStartTime = new Date();
+            displayQuestion();
+            startTimer();
+        }
+
+        function displayQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                const currentQuestion = questions[currentQuestionIndex];
+                questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`;
+                questionText.textContent = currentQuestion.text;
+                
+                optionButtons.forEach((btn, index) => {
+                    btn.textContent = currentQuestion.options[index];
+                    btn.disabled = false;
+                    btn.classList.remove('correct', 'incorrect');
+                    btn.style.display = 'block';
+                });
+
+                explanationArea.style.display = 'none';
+                nextBtn.style.display = 'none';
+                window.scrollTo(0,0);
+            } else {
+                endQuiz();
+            }
+        }
+
+        function handleOptionClick(event) {
+            const selectedOptionIndex = parseInt(event.target.dataset.index);
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            currentQuestion.userAnswerIndex = selectedOptionIndex;
+
+            optionButtons.forEach(btn => btn.disabled = true);
+
+            let explanationToShow = "";
+            let titleExplanation = "";
+
+            if (selectedOptionIndex === currentQuestion.correctAnswerIndex) {
+                score++;
+                event.target.classList.add('correct');
+                titleExplanation = "¡Respuesta Correcta!";
+                explanationToShow = currentQuestion.explanation.correct;
+                currentQuestion.isCorrect = true;
+            } else {
+                event.target.classList.add('incorrect');
+                optionButtons[currentQuestion.correctAnswerIndex].classList.add('correct');
+                titleExplanation = "Respuesta Incorrecta";
+                explanationToShow = `${currentQuestion.explanation.incorrectBase} La respuesta correcta era: "<strong>${currentQuestion.options[currentQuestion.correctAnswerIndex]}</strong>".<br><br><em>Explicación:</em> ${currentQuestion.explanation.optionsExplanation[currentQuestion.correctAnswerIndex]}`;
+                if (currentQuestion.explanation.optionsExplanation[selectedOptionIndex] !== currentQuestion.explanation.optionsExplanation[currentQuestion.correctAnswerIndex]) {
+                     explanationToShow = `Elegiste: "${currentQuestion.options[selectedOptionIndex]}".<br><em>Por qué no es correcto:</em> ${currentQuestion.explanation.optionsExplanation[selectedOptionIndex]}<br><br>La respuesta correcta era: "<strong>${currentQuestion.options[currentQuestion.correctAnswerIndex]}</strong>".<br><em>Explicación:</em> ${currentQuestion.explanation.optionsExplanation[currentQuestion.correctAnswerIndex]}`;
+                }
+                 currentQuestion.isCorrect = false;
+            }
+            
+            explanationTitle.textContent = titleExplanation;
+            explanationText.innerHTML = explanationToShow;
+            explanationArea.style.display = 'block';
+            nextBtn.style.display = 'inline-block';
+
+            userAnswers.push({
+                questionText: currentQuestion.text,
+                options: currentQuestion.options,
+                userAnswer: currentQuestion.options[selectedOptionIndex],
+                correctAnswer: currentQuestion.options[currentQuestion.correctAnswerIndex],
+                isCorrect: selectedOptionIndex === currentQuestion.correctAnswerIndex,
+                explanation: explanationToShow
+            });
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            displayQuestion();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerDisplay.textContent = `Tiempo restante: ${Math.floor(timeLeft / 60)}:${(timeLeft % 60) < 10 ? '0' : ''}${timeLeft % 60}`;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerDisplay.textContent = `Tiempo restante: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerDisplay.textContent = "¡Tiempo agotado!";
+                    endQuiz(true); 
+                }
+            }, 1000);
+        }
+
+        function endQuiz(timeUp = false) {
+            clearInterval(timerInterval);
+            questionScreen.style.display = 'none';
+            resultsScreen.style.display = 'block';
+             window.scrollTo(0,0);
+
+            const quizEndTime = new Date();
+            const timeSpentMs = quizEndTime - quizStartTime;
+            const timeSpentSec = Math.floor(timeSpentMs / 1000);
+            const minutesSpent = Math.floor(timeSpentSec / 60);
+            const secondsSpent = timeSpentSec % 60;
+
+            if (timeUp) {
+                 finalScoreDisplay.textContent = `¡Tiempo agotado! Tu puntaje final es: ${score} de ${questions.length}`;
+            } else {
+                 finalScoreDisplay.textContent = `Tu puntaje final es: ${score} de ${questions.length}`;
+            }
+            timeTakenDisplay.textContent = `Tiempo utilizado: ${minutesSpent} minutos y ${secondsSpent} segundos.`;
+
+            renderDetailedResults();
+        }
+        
+        function renderDetailedResults() {
+            detailedResultsContainer.innerHTML = ''; 
+            questions.forEach((q, index) => {
+                const resultDiv = document.createElement('div');
+                resultDiv.classList.add('result-item');
+                
+                let userAnswerText = "No respondida";
+                let userAnswerClass = "";
+                let explanationContent = q.explanation.optionsExplanation[q.correctAnswerIndex];
+
+                if (q.userAnswerIndex !== null) {
+                    userAnswerText = q.options[q.userAnswerIndex];
+                    if (q.isCorrect) {
+                        userAnswerClass = 'correct';
+                        explanationContent = q.explanation.correct;
+                    } else {
+                        userAnswerClass = 'incorrect';
+                        explanationContent = `Elegiste: "${q.options[q.userAnswerIndex]}". <span class="explanation-preview">(${q.explanation.optionsExplanation[q.userAnswerIndex]})</span><br>Correcta: "${q.options[q.correctAnswerIndex]}". <span class="explanation-preview">(${q.explanation.optionsExplanation[q.correctAnswerIndex]})</span>`;
+                    }
+                } else {
+                     explanationContent = `La respuesta correcta era: "${q.options[q.correctAnswerIndex]}". <span class="explanation-preview">(${q.explanation.optionsExplanation[q.correctAnswerIndex]})</span>`;
+                }
+
+                resultDiv.innerHTML = `
+                    <p><strong>Pregunta ${index + 1}:</strong> ${q.text}</p>
+                    <p>Tu respuesta: <span class="user-answer ${userAnswerClass}">${userAnswerText}</span></p>
+                    ${!q.isCorrect && q.userAnswerIndex !== null ? `<p>Respuesta correcta: <strong>${q.options[q.correctAnswerIndex]}</strong></p>` : ''}
+                     ${q.userAnswerIndex === null ? `<p>Respuesta correcta: <strong>${q.options[q.correctAnswerIndex]}</strong></p>` : ''}
+                    <p><em>Explicación:</em> ${explanationContent}</p>
+                `;
+                detailedResultsContainer.appendChild(resultDiv);
+            });
+        }
+
+        // --- EVENT LISTENERS ---
+        startBtn.addEventListener('click', startQuiz);
+        nextBtn.addEventListener('click', nextQuestion);
+        restartBtn.addEventListener('click', () => {
+            resultsScreen.style.display = 'none';
+            startScreen.style.display = 'block';
+            window.scrollTo(0,0);
+        });
+
+        optionButtons.forEach(button => {
+            button.addEventListener('click', handleOptionClick);
+        });
+
+    </script>
+</body>
+</html>
